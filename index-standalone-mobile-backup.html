@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rose Garden Nail</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: oklch(0.78 0.08 350);
+  --primary-fg: oklch(0.99 0.005 350);
+  --secondary: oklch(0.94 0.03 350);
+  --secondary-fg: oklch(0.3 0.1 350);
+  --muted: oklch(0.95 0.02 350);
+  --muted-fg: oklch(0.5 0.05 350);
+  --accent: oklch(0.82 0.13 85);
+  --accent-fg: oklch(0.25 0.06 350);
+  --bg: oklch(0.98 0.015 350);
+  --fg: oklch(0.25 0.06 350);
+  --card: oklch(1 0 0);
+  --border: oklch(0.92 0.015 350);
+  --destructive: oklch(0.58 0.24 27);
+  --radius: 0.625rem;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--fg); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+.font-display { font-family: var(--font-display); }
+.hidden { display: none !important; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+a { text-decoration: none; color: inherit; }
+
+/* === Layout === */
+#app { min-height: 100vh; }
+
+/* === Sidebar Trigger === */
+.menu-trigger {
+  position: fixed; top: 16px; left: 16px; z-index: 40;
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+  border: 1px solid var(--border); box-shadow: var(--shadow-md);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.menu-trigger:hover { background: var(--secondary); }
+.menu-trigger svg { width: 20px; height: 20px; color: var(--primary); }
+
+/* === Sidebar Drawer === */
+.sidebar-overlay {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(0,0,0,0.2); backdrop-filter: blur(4px);
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0; z-index: 50;
+  width: 280px; background: var(--muted); box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column;
+  transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.sidebar.open { transform: translateX(0); }
+.sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 24px; border-bottom: 1px solid var(--border); }
+.sidebar-logo { display: flex; align-items: center; gap: 12px; }
+.sidebar-logo-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(200,120,140,0.1); display: flex; align-items: center; justify-content: center; }
+.sidebar-logo-icon span { font-family: var(--font-display); color: var(--primary); font-weight: 700; font-size: 18px; }
+.sidebar-close { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.sidebar-close:hover { background: var(--secondary); }
+.sidebar-close svg { width: 16px; height: 16px; color: var(--muted-fg); }
+.sidebar-nav { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+.sidebar-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; transition: all 0.2s; font-size: 14px; font-weight: 500; }
+.sidebar-nav-item:hover { background: var(--secondary); }
+.sidebar-nav-item.active { background: var(--primary); color: var(--primary-fg); box-shadow: var(--shadow-md); }
+.sidebar-nav-item svg { width: 16px; height: 16px; }
+.sidebar-footer { padding: 16px; border-top: 1px solid var(--border); text-align: center; color: var(--muted-fg); font-size: 12px; }
+.sidebar-footer p:first-child { font-family: var(--font-display); font-style: italic; }
+
+/* === Hero === */
+.hero { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.hero-bg { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(200,120,140,0.08), var(--bg), var(--bg)); }
+.hero-blob { position: absolute; border-radius: 50%; filter: blur(80px); animation: float 8s ease-in-out infinite; }
+.hero-blob.b1 { top: 25%; left: 25%; width: 384px; height: 384px; background: rgba(200,120,140,0.1); }
+.hero-blob.b2 { bottom: 25%; right: 25%; width: 320px; height: 320px; background: rgba(200,160,80,0.1); animation-direction: reverse; }
+.hero-content { position: relative; z-index: 10; text-align: center; padding: 64px 24px; }
+.hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 999px; background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 24px; font-size: 12px; color: var(--muted-fg); }
+.hero-badge svg { width: 14px; height: 14px; color: var(--accent); }
+.hero-logo { width: 80px; height: 80px; border-radius: 16px; background: rgba(200,120,140,0.1); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); margin: 0 auto 24px; }
+.hero-logo svg { width: 40px; height: 40px; color: var(--primary); }
+.hero h1 { font-family: var(--font-display); color: var(--primary); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; font-size: clamp(2.5rem, 8vw, 4.5rem); }
+.hero h2 { font-family: var(--font-display); color: rgba(40,20,30,0.8); font-weight: 500; letter-spacing: 0.15em; font-size: clamp(1.5rem, 5vw, 2.5rem); margin-top: 4px; }
+.hero-tagline { font-family: var(--font-display); font-style: italic; color: var(--muted-fg); font-size: clamp(0.9rem, 2vw, 1.1rem); margin-top: 24px; max-width: 480px; margin-left: auto; margin-right: auto; }
+.hero-cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin-top: 32px; }
+.hero-scroll { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; color: var(--muted-fg); }
+.hero-scroll svg { width: 16px; height: 16px; color: var(--primary); animation: bounce 2s infinite; }
+@keyframes float { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-20px) scale(1.05)} }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+
+/* === Buttons === */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
+.btn svg { width: 16px; height: 16px; }
+.btn-primary { background: var(--primary); color: var(--primary-fg); box-shadow: var(--shadow-md); }
+.btn-primary:hover { opacity: 0.9; }
+.btn-outline { background: transparent; border: 1px solid rgba(200,120,140,0.3); color: var(--fg); }
+.btn-outline:hover { background: var(--secondary); }
+.btn-ghost { background: transparent; color: var(--muted-fg); }
+.btn-ghost:hover { background: var(--secondary); color: var(--fg); }
+.btn-destructive { background: var(--destructive); color: white; }
+.btn-destructive:hover { opacity: 0.9; }
+.btn-sm { padding: 8px 14px; font-size: 13px; }
+
+/* === Stats Section === */
+.section { padding: 64px 16px; }
+.container { max-width: 960px; margin: 0 auto; }
+.stats-label { font-family: var(--font-display); font-style: italic; color: var(--muted-fg); text-align: center; font-size: 14px; margin-bottom: 8px; }
+.stats-title { font-family: var(--font-display); color: var(--fg); text-align: center; font-size: clamp(2rem, 6vw, 3rem); font-weight: 600; margin-bottom: 48px; }
+.stats-number { display: flex; align-items: baseline; justify-content: center; gap: 12px; margin-bottom: 32px; }
+.stats-number .num { font-family: var(--font-display); color: var(--primary); font-weight: 700; font-size: clamp(4rem, 12vw, 7rem); line-height: 1; }
+.stats-number .unit { font-family: var(--font-display); color: var(--fg); font-size: clamp(1.5rem, 4vw, 2.5rem); }
+.stats-desc { color: var(--muted-fg); text-align: center; max-width: 420px; margin: 0 auto; }
+
+/* === Recent cards === */
+.recent-title { font-family: var(--font-display); color: var(--fg); text-align: center; font-size: 2rem; font-weight: 600; margin-bottom: 32px; }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.customer-card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 24px; cursor: pointer; transition: all 0.2s; }
+.customer-card:hover { box-shadow: var(--shadow-lg); }
+.customer-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.customer-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(200,120,140,0.1); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); color: var(--primary); font-weight: 700; }
+.customer-name { font-family: var(--font-display); color: var(--fg); font-weight: 600; font-size: 1.5rem; }
+.customer-sub { color: var(--muted-fg); font-size: 12px; margin-top: 4px; }
+.visit-badge { display: inline-block; border-radius: 999px; background: rgba(200,120,140,0.08); color: var(--primary); padding: 2px 8px; font-size: 12px; margin-top: 8px; }
+
+/* === CTA card === */
+.cta-card { background: var(--card); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-md); padding: 32px; text-align: center; }
+.cta-card h3 { font-family: var(--font-display); color: var(--fg); font-size: 1.5rem; font-weight: 600; margin-bottom: 8px; }
+.cta-card p { color: var(--muted-fg); margin-bottom: 24px; }
+
+/* === Customers page === */
+.page { padding: 64px 16px 48px; }
+.page-head { display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px; }
+@media(min-width:640px){ .page-head { flex-direction: row; align-items: center; justify-content: space-between; } }
+.page-title { font-family: var(--font-display); color: var(--fg); font-size: 2rem; font-weight: 700; }
+.page-subtitle { color: var(--muted-fg); font-size: 14px; margin-top: 4px; }
+.page-actions { display: flex; align-items: center; gap: 8px; }
+.search-wrap { position: relative; }
+.search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--muted-fg); }
+.search-input { padding: 10px 12px 10px 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); width: 200px; outline: none; transition: border-color 0.2s; }
+.search-input:focus { border-color: var(--primary); }
+
+/* Table */
+.table-wrap { background: var(--card); border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 800px; }
+thead tr { background: rgba(148,120,130,0.05); }
+th { padding: 12px 16px; text-align: left; font-weight: 600; color: var(--fg); font-size: 14px; white-space: nowrap; }
+td { padding: 12px 16px; border-top: 1px solid var(--border); font-size: 14px; color: var(--muted-fg); }
+tbody tr { transition: background 0.2s; }
+tbody tr:hover { background: rgba(148,120,130,0.03); }
+.td-name { display: flex; align-items: center; gap: 8px; }
+.td-name .avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(200,120,140,0.1); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); color: var(--primary); font-weight: 700; font-size: 12px; }
+.td-name a { font-weight: 500; color: var(--fg); transition: color 0.2s; }
+.td-name a:hover { color: var(--primary); }
+.td-center { text-align: center; }
+.td-right { text-align: right; }
+.td-actions { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.icon-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.icon-btn:hover { background: rgba(200,160,80,0.15); }
+.icon-btn.del:hover { background: rgba(220,60,60,0.1); }
+.icon-btn svg { width: 14px; height: 14px; }
+.icon-btn svg { color: var(--muted-fg); }
+.icon-btn.del svg { color: var(--destructive); }
+.pill { display: inline-block; border-radius: 999px; background: rgba(200,120,140,0.08); color: var(--primary); padding: 2px 8px; font-size: 12px; font-weight: 500; }
+
+/* Mobile cards */
+.mobile-cards { display: flex; flex-direction: column; gap: 8px; }
+@media(min-width:768px){ .mobile-cards { display: none; } }
+@media(max-width:767px){ .table-wrap { display: none; } }
+.mc-item { background: var(--card); border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 16px; cursor: pointer; transition: box-shadow 0.2s; }
+.mc-item:hover { box-shadow: var(--shadow-md); }
+.mc-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+.mc-info { display: flex; align-items: center; gap: 12px; }
+.mc-info .avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(200,120,140,0.1); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); color: var(--primary); font-weight: 700; }
+.mc-name { font-weight: 500; color: var(--fg); }
+.mc-meta { color: var(--muted-fg); font-size: 12px; }
+.mc-actions { display: flex; gap: 4px; }
+.mc-foot { display: flex; align-items: center; justify-content: space-between; }
+
+/* Empty state */
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 64px 24px; gap: 16px; }
+.empty-icon { width: 64px; height: 64px; border-radius: 16px; background: var(--secondary); display: flex; align-items: center; justify-content: center; }
+.empty-icon svg { width: 32px; height: 32px; color: var(--muted-fg); }
+.empty h3 { font-family: var(--font-display); color: var(--fg); font-size: 1.5rem; font-weight: 600; }
+.empty p { color: var(--muted-fg); margin-top: 4px; }
+
+/* === Detail page === */
+.detail-header { background: linear-gradient(to bottom, rgba(200,120,140,0.08), var(--bg)); padding: 64px 16px 32px; }
+.detail-back { display: inline-flex; align-items: center; gap: 8px; color: var(--muted-fg); margin-bottom: 16px; font-size: 14px; transition: color 0.2s; }
+.detail-back:hover { color: var(--fg); }
+.detail-back svg { width: 16px; height: 16px; }
+.detail-top { display: flex; flex-direction: column; gap: 16px; }
+@media(min-width:640px){ .detail-top { flex-direction: row; align-items: flex-start; justify-content: space-between; } }
+.detail-identity { display: flex; align-items: center; gap: 16px; }
+.detail-avatar { width: 64px; height: 64px; border-radius: 16px; background: rgba(200,120,140,0.1); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); }
+.detail-avatar span { font-family: var(--font-display); color: var(--primary); font-weight: 700; font-size: 2rem; }
+.detail-name { font-family: var(--font-display); color: var(--fg); font-size: 2rem; font-weight: 700; }
+.detail-badges { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; font-size: 12px; }
+.badge-secondary { background: var(--secondary); color: var(--secondary-fg); }
+.badge-outline { border: 1px solid rgba(200,120,140,0.3); color: var(--fg); }
+.detail-actions { display: flex; align-items: center; gap: 8px; }
+
+/* Stats cards */
+.stats-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 32px; }
+@media(min-width:640px){ .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+.stat-card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 20px; display: flex; align-items: center; justify-content: space-between; }
+.stat-label { color: var(--muted-fg); font-size: 12px; }
+.stat-value { font-family: var(--font-display); font-weight: 700; font-size: 2rem; }
+.stat-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.stat-icon svg { width: 20px; height: 20px; }
+.stat-icon.primary { background: rgba(200,120,140,0.1); }
+.stat-icon.primary svg { color: var(--primary); }
+.stat-icon.accent { background: rgba(200,160,80,0.1); }
+.stat-icon.accent svg { color: var(--accent); }
+.stat-icon.muted { background: var(--secondary); }
+.stat-icon.muted svg { color: var(--muted-fg); }
+
+/* Info cards */
+.info-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 32px; }
+@media(min-width:768px){ .info-grid { grid-template-columns: repeat(2, 1fr); } }
+.info-card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 20px; }
+.info-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.info-head svg { width: 16px; height: 16px; color: var(--primary); }
+.info-head h3 { font-family: var(--font-display); color: var(--fg); font-weight: 600; font-size: 14px; }
+.info-card p { color: var(--muted-fg); font-size: 16px; }
+
+/* Records */
+.records-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.records-head h2 { font-family: var(--font-display); color: var(--fg); font-size: 1.5rem; font-weight: 600; }
+.record-card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 8px; transition: box-shadow 0.2s; }
+.record-card:hover { box-shadow: var(--shadow-md); }
+.record-top { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+@media(min-width:640px){ .record-top { flex-direction: row; align-items: flex-start; justify-content: space-between; } }
+.record-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.record-date { display: flex; align-items: center; gap: 4px; color: var(--muted-fg); font-size: 12px; }
+.record-date svg { width: 14px; height: 14px; }
+.record-details { display: grid; grid-template-columns: 1fr; gap: 4px; }
+@media(min-width:640px){ .record-details { grid-template-columns: repeat(2, 1fr); } }
+.record-details p { font-size: 14px; color: var(--fg); }
+.record-details p span { color: var(--muted-fg); }
+.record-remarks { color: var(--muted-fg); font-size: 14px; margin-top: 4px; }
+
+/* === Modal === */
+.modal-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+.modal { background: var(--card); border-radius: 16px; box-shadow: var(--shadow-xl); width: 100%; max-width: 448px; max-height: 90vh; overflow-y: auto; transform: scale(0.96); transition: transform 0.2s; }
+.modal-overlay.open .modal { transform: scale(1); }
+.modal-header { padding: 24px 24px 0; }
+.modal-title { font-family: var(--font-display); color: var(--primary); font-size: 1.25rem; font-weight: 600; }
+.modal-body { padding: 24px; }
+.modal-footer { padding: 0 24px 24px; display: flex; justify-content: flex-end; gap: 8px; }
+
+/* Form */
+.form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+.form-label { font-size: 14px; color: var(--fg); font-weight: 500; }
+.form-input, .form-textarea, .form-select { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); outline: none; transition: border-color 0.2s; width: 100%; }
+.form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--primary); }
+.form-textarea { resize: vertical; min-height: 60px; }
+.form-error { color: var(--destructive); font-size: 12px; margin-top: 4px; }
+
+/* Animations */
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+@keyframes fadeIn { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
+.stagger > * { opacity: 0; animation: fadeIn 0.5s ease forwards; }
+.stagger > *:nth-child(1){animation-delay:0.05s}
+.stagger > *:nth-child(2){animation-delay:0.15s}
+.stagger > *:nth-child(3){animation-delay:0.25s}
+.stagger > *:nth-child(4){animation-delay:0.35s}
+.stagger > *:nth-child(5){animation-delay:0.45s}
+
+/* === Mobile usability fixes === */
+html { min-height: 100%; background: var(--bg); }
+body { min-height: 100%; padding-bottom: env(safe-area-inset-bottom); }
+.menu-trigger { top: max(16px, env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left)); }
+.sidebar { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+.modal-overlay { align-items: flex-end; padding: 8px 8px max(8px, env(safe-area-inset-bottom)); }
+.modal { max-height: 88dvh; border-radius: 16px 16px 12px 12px; }
+@media(min-width:640px){
+  .modal-overlay { align-items:center; padding:16px; }
+  .modal { border-radius:16px; }
+}
+@media(max-width:639px){
+  .page { padding-top: 76px; }
+  .page-actions { width:100%; flex-direction:column; align-items:stretch; }
+  .search-wrap, .search-input { width:100%; }
+  .page-actions .btn { width:100%; }
+  .detail-header { padding-top:76px; }
+  .detail-actions { width:100%; }
+  .detail-actions .btn { flex:1; }
+  .hero-content { padding-left:16px; padding-right:16px; }
+  .hero-cta .btn { width:min(100%, 320px); }
+}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Sidebar -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><span>R</span></div>
+      <div>
+        <div style="font-family:var(--font-display);color:var(--fg);font-weight:600;font-size:14px;">Rose Garden</div>
+        <div style="color:var(--muted-fg);font-size:12px;">Nail Studio</div>
+      </div>
+    </div>
+    <div class="sidebar-close" id="sidebarClose">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item" data-route="/">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
+      <span>首页</span>
+    </a>
+    <a class="sidebar-nav-item" data-route="/customers">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a4 4 0 10-4-4"/></svg>
+      <span>客人信息</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="exportData()">导出备份</button>
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="document.getElementById('importFile').click()">导入备份</button>
+    </div>
+    <input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)">
+    <p>Rose Garden Nail</p>
+    <p style="margin-top:4px;">优雅美甲 · 精致生活</p>
+  </div>
+</aside>
+
+<!-- Modal container -->
+<div class="modal-overlay" id="modalOverlay"></div>
+
+<script>
+// === State management ===
+const CUSTOMERS_KEY = 'rgn_customers';
+const RECORDS_KEY = 'rgn_service_records';
+
+const SERVICE_TYPES = ['Regular Manicure','Gel Manicure','Builder Gel','Builder Gel Fill','UV Gel Full Set','UV Gel Fill','Gel X Full Set','Gel X Fill','Classic Pedicure','Gel Pedicure','French Tip','Nail Art','Removal','Nail Repair','Head Spa'];
+const GENDER_LABELS = { female:'女', male:'男', other:'其他' };
+const DOLLAR = '$';
+
+function read(key) { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } }
+function write(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+function getCustomers() {
+  return read(CUSTOMERS_KEY).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+}
+function getCustomer(id) { return read(CUSTOMERS_KEY).find(c => c.id === id); }
+function addCustomer(d) { const cs = read(CUSTOMERS_KEY); const c = {...d, id:uid(), created_at:new Date().toISOString()}; cs.push(c); write(CUSTOMERS_KEY, cs); return c; }
+function updateCustomer(id, d) { const cs = read(CUSTOMERS_KEY); const i = cs.findIndex(c=>c.id===id); if(i>=0){ cs[i]={...cs[i],...d}; write(CUSTOMERS_KEY,cs); } }
+function deleteCustomer(id) { write(CUSTOMERS_KEY, read(CUSTOMERS_KEY).filter(c=>c.id!==id)); write(RECORDS_KEY, read(RECORDS_KEY).filter(r=>r.customer_id!==id)); }
+
+function getRecords(cid) { return read(RECORDS_KEY).filter(r=>r.customer_id===cid).sort((a,b)=>new Date(b.service_date)-new Date(a.service_date)); }
+function addRecord(d) { const rs = read(RECORDS_KEY); const r = {...d, id:uid(), created_at:new Date().toISOString()}; rs.push(r); write(RECORDS_KEY, rs); return r; }
+function deleteRecord(id) { write(RECORDS_KEY, read(RECORDS_KEY).filter(r=>r.id!==id)); }
+
+function getStats(cid) {
+  const records = getRecords(cid);
+  const visit_count = records.length;
+  const total_tip = records.reduce((s,r)=>s+(r.tip_amount||0),0);
+  const avg_tip = visit_count > 0 ? total_tip/visit_count : 0;
+  return { visit_count, total_tip, avg_tip };
+}
+
+
+// === Backup & restore ===
+function exportData() {
+  const data = {
+    app: 'Rose Garden Nail',
+    version: 1,
+    exported_at: new Date().toISOString(),
+    customers: read(CUSTOMERS_KEY),
+    records: read(RECORDS_KEY)
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `rose-garden-backup-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!Array.isArray(data.customers) || !Array.isArray(data.records)) throw new Error('Invalid backup');
+      openModal(`
+        <div class="modal-header"><h2 class="modal-title">导入备份</h2></div>
+        <div class="modal-body"><p style="color:var(--muted-fg);">将导入 ${data.customers.length} 位顾客和 ${data.records.length} 条服务记录。当前数据会被覆盖。</p></div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeModal()">取消</button>
+          <button class="btn btn-primary" id="confirmImportBtn">确认导入</button>
+        </div>
+      `);
+      document.getElementById('confirmImportBtn').onclick = () => {
+        write(CUSTOMERS_KEY, data.customers);
+        write(RECORDS_KEY, data.records);
+        closeModal();
+        navigate('/customers');
+      };
+    } catch (err) {
+      alert('备份文件无法读取，请确认选择的是本系统导出的 JSON 文件。');
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// === Router ===
+let currentRoute = '/';
+
+function navigate(route) {
+  currentRoute = route;
+  closeSidebar();
+  render();
+  window.scrollTo(0, 0);
+}
+
+function getParam() {
+  // For detail page: route is /customers/:id
+  if (currentRoute.startsWith('/customers/')) {
+    return currentRoute.split('/')[2];
+  }
+  return null;
+}
+
+// === Icons ===
+const I = {
+  flower: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 7.5a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM12 7.5a4.5 4.5 0 10-9 0 4.5 4.5 0 019 0zM12 16.5a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM12 16.5a4.5 4.5 0 10-9 0 4.5 4.5 0 019 0z"/></svg>',
+  sparkles: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 3l.5 3L9 7l-3.5 1L5 11l-.5-3L1 7l3.5-1L5 3zM19 13l.5 3L23 17l-3.5 1L19 21l-.5-3L15 17l3.5-1L19 13zM12 2l1 5 5 1-5 1-1 5-1-5-5-1 5-1 1-5z"/></svg>',
+  users: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a4 4 0 10-4-4"/></svg>',
+  plus: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>',
+  arrowDown: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 14l-7 7-7-7M12 21V3"/></svg>',
+  search: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
+  settings: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m17-5l-4.24 4.24m-3.52 3.52L5.76 18.24m0-12.48l4.24 4.24m3.52 3.52L18.24 18.24"/></svg>',
+  trash: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>',
+  pencil: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  arrowLeft: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+  calendar: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  palette: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="8.5" cy="10.5" r="1"/><circle cx="15.5" cy="10.5" r="1"/><circle cx="12" cy="8" r="1"/></svg>',
+  wrench: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 00-5.6 5.6L3 18v3h3l6.1-6.1a4 4 0 005.6-5.6l-2.5 2.5-2.5-2.5 2.5-2.5z"/></svg>',
+  coins: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1110.34 18M7 6h1v4M16.71 13.88l.7.71-2.82 2.82"/></svg>',
+  message: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',
+  menu: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>',
+};
+
+// === Sidebar ===
+function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('open'); }
+
+// === Modal ===
+function openModal(html) {
+  const overlay = document.getElementById('modalOverlay');
+  overlay.innerHTML = `<div class="modal">${html}</div>`;
+  overlay.classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); document.getElementById('modalOverlay').innerHTML = ''; }
+
+// === Render ===
+function render() {
+  const app = document.getElementById('app');
+  // Update sidebar active
+  document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+    const route = item.dataset.route;
+    if (currentRoute === route || (route !== '/' && currentRoute.startsWith(route))) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+
+  if (currentRoute === '/') renderHome(app);
+  else if (currentRoute === '/customers') renderCustomers(app);
+  else if (currentRoute.startsWith('/customers/')) renderDetail(app);
+  else renderNotFound(app);
+}
+
+function renderHome(app) {
+  const customers = getCustomers();
+  const recent = customers.slice(0, 3);
+  app.innerHTML = `
+    <div class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-blob b1"></div>
+      <div class="hero-blob b2"></div>
+      <div class="hero-content fade-in">
+        <div class="hero-badge">${I.sparkles}<span>精致美甲 · 温馨服务</span></div>
+        <div class="hero-logo">${I.flower}</div>
+        <h1 class="font-display">Rose Garden</h1>
+        <h2 class="font-display">Nail</h2>
+        <p class="hero-tagline">每一片指甲，都是一朵绽放的玫瑰</p>
+        <div class="hero-cta">
+          <button class="btn btn-primary" onclick="openCustomerForm()">${I.plus}添加新顾客</button>
+          <button class="btn btn-outline" onclick="navigate('/customers')">${I.users}查看客人</button>
+        </div>
+      </div>
+      <div class="hero-scroll"><span>向下滚动</span>${I.arrowDown}</div>
+    </div>
+
+    <section class="section">
+      <div class="container stagger">
+        <p class="stats-label">我们的顾客</p>
+        <h2 class="stats-title">已经服务了</h2>
+        <div class="stats-number">
+          <span class="num font-display">${customers.length}</span>
+          <span class="unit font-display">位客人</span>
+        </div>
+        <p class="stats-desc">感谢每一位顾客的信任，我们用心记录每一次服务的细节</p>
+      </div>
+    </section>
+
+    ${recent.length > 0 ? `
+    <section style="padding: 32px 16px 64px;">
+      <div class="container">
+        <h3 class="recent-title">最近添加</h3>
+        <div class="cards-grid stagger">
+          ${recent.map(c => `
+            <div class="customer-card" onclick="navigate('/customers/${c.id}')">
+              <div class="customer-card-head">
+                <div class="customer-avatar">${c.name.charAt(0)}</div>
+                <span style="color:var(--muted-fg);font-size:12px;">${GENDER_LABELS[c.gender]}</span>
+              </div>
+              <h4 class="customer-name">${esc(c.name)}</h4>
+              ${c.preferred_tech ? `<p class="customer-sub">指定美甲师：${esc(c.preferred_tech)}</p>` : ''}
+              <span class="visit-badge">已到访 ${getStats(c.id).visit_count} 次</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </section>` : ''}
+
+    <section style="padding: 48px 16px 64px;">
+      <div class="container" style="max-width:640px;">
+        <div class="cta-card fade-in">
+          <h3>添加新顾客</h3>
+          <p>记录顾客的基本信息、美甲偏好和注意事项</p>
+          <button class="btn btn-primary" onclick="openCustomerForm()">${I.plus}添加新顾客</button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderCustomers(app) {
+  const customers = getCustomers();
+  const search = app.dataset.search || '';
+  const filtered = customers.filter(c => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return c.name.toLowerCase().includes(q) || (c.features||'').toLowerCase().includes(q) || (c.preferred_tech||'').toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q);
+  });
+
+  app.innerHTML = `
+    <div class="page">
+      <div class="container">
+        <div class="page-head fade-in">
+          <div>
+            <h1 class="page-title">客人信息</h1>
+            <p class="page-subtitle">共 ${customers.length} 位顾客</p>
+          </div>
+          <div class="page-actions">
+            <div class="search-wrap">
+              ${I.search}
+              <input class="search-input" placeholder="搜索顾客..." value="${esc(search)}" oninput="updateSearch(this.value)">
+            </div>
+            <button class="btn btn-outline" onclick="openCustomerForm()">${I.settings}<span class="hidden" style="display:inline;">管理</span>管理</button>
+          </div>
+        </div>
+
+        ${filtered.length > 0 ? `
+          <div class="table-wrap fade-in">
+            <table>
+              <thead>
+                <tr>
+                  <th>姓名</th><th>性别</th><th>特征</th><th>指定美甲师</th><th>注意事项</th><th class="td-center">到访次数</th><th class="td-right">小费情况</th><th class="td-center">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filtered.map(c => {
+                  const s = getStats(c.id);
+                  return `<tr>
+                    <td><div class="td-name"><div class="avatar">${c.name.charAt(0)}</div><a onclick="navigate('/customers/${c.id}')">${esc(c.name)}</a></div></td>
+                    <td>${GENDER_LABELS[c.gender]}</td>
+                    <td style="max-width:128px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(c.features)||'—'}</td>
+                    <td>${esc(c.preferred_tech)||'—'}</td>
+                    <td style="max-width:128px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(c.notes)||'—'}</td>
+                    <td class="td-center"><span class="pill">${s.visit_count} 次</span></td>
+                    <td class="td-right">${s.visit_count > 0 ? `<div><span style="color:var(--fg);font-weight:500;">${DOLLAR}${s.total_tip.toFixed(0)}</span><br><span style="color:var(--muted-fg);font-size:12px;">均 ${DOLLAR}${s.avg_tip.toFixed(0)}</span></div>` : '—'}</td>
+                    <td><div class="td-actions">
+                      <div class="icon-btn" onclick="openCustomerForm(${JSON.stringify(c).replace(/"/g,'&quot;')})">${I.pencil}</div>
+                      <div class="icon-btn del" onclick="confirmDeleteCustomer('${c.id}','${esc(c.name)}')">${I.trash}</div>
+                    </div></td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mobile-cards stagger">
+            ${filtered.map(c => {
+              const s = getStats(c.id);
+              return `<div class="mc-item" onclick="navigate('/customers/${c.id}')">
+                <div class="mc-head">
+                  <div class="mc-info">
+                    <div class="avatar">${c.name.charAt(0)}</div>
+                    <div>
+                      <div class="mc-name">${esc(c.name)}</div>
+                      <div class="mc-meta">${GENDER_LABELS[c.gender]}${c.preferred_tech ? ' · ' + esc(c.preferred_tech) : ''}</div>
+                    </div>
+                  </div>
+                  <div class="mc-actions">
+                    <div class="icon-btn" onclick="event.stopPropagation();openCustomerForm(${JSON.stringify(c).replace(/"/g,'&quot;')})">${I.pencil}</div>
+                    <div class="icon-btn del" onclick="event.stopPropagation();confirmDeleteCustomer('${c.id}','${esc(c.name)}')">${I.trash}</div>
+                  </div>
+                </div>
+                <div class="mc-foot">
+                  <span class="pill">已到访 ${s.visit_count} 次</span>
+                  ${s.total_tip > 0 ? `<span style="color:var(--fg);font-weight:500;font-size:12px;">小费 ${DOLLAR}${s.total_tip.toFixed(0)}</span>` : ''}
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        ` : `
+          <div class="empty fade-in">
+            <div class="empty-icon">${I.users}</div>
+            <div>
+              <h3>${search ? '未找到匹配的顾客' : '还没有顾客'}</h3>
+              <p>${search ? '试试其他关键词' : '点击右上角管理按钮添加第一位顾客'}</p>
+            </div>
+            ${!search ? `<button class="btn btn-primary" onclick="openCustomerForm()">${I.plus}添加新顾客</button>` : ''}
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function renderDetail(app) {
+  const id = getParam();
+  const customer = getCustomer(id);
+  if (!customer) {
+    app.innerHTML = `<div class="empty"><p style="color:var(--muted-fg);">顾客不存在或已被删除</p><button class="btn btn-outline" onclick="navigate('/customers')">${I.arrowLeft}返回客人列表</button></div>`;
+    return;
+  }
+  const records = getRecords(id);
+  const s = getStats(id);
+
+  app.innerHTML = `
+    <div class="detail-header">
+      <div class="container">
+        <a class="detail-back" onclick="navigate('/customers')">${I.arrowLeft}返回客人列表</a>
+        <div class="detail-top fade-in">
+          <div class="detail-identity">
+            <div class="detail-avatar"><span>${customer.name.charAt(0)}</span></div>
+            <div>
+              <h1 class="detail-name">${esc(customer.name)}</h1>
+              <div class="detail-badges">
+                <span class="badge badge-secondary">${GENDER_LABELS[customer.gender]}</span>
+                ${customer.preferred_tech ? `<span class="badge badge-outline">指定：${esc(customer.preferred_tech)}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="detail-actions">
+            <button class="btn btn-outline" onclick="openCustomerForm(${JSON.stringify(customer).replace(/"/g,'&quot;')})">${I.pencil}<span>编辑</span></button>
+            <button class="btn btn-primary" onclick="openRecordForm('${id}')">${I.plus}添加记录</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="padding: 32px 16px 64px;">
+      <div class="stats-grid stagger">
+        <div class="stat-card">
+          <div><p class="stat-label">到访次数</p><p class="stat-value" style="color:var(--primary);">${s.visit_count}</p></div>
+          <div class="stat-icon primary">${I.calendar}</div>
+        </div>
+        <div class="stat-card">
+          <div><p class="stat-label">总小费</p><p class="stat-value" style="color:var(--accent);">${DOLLAR}${s.total_tip.toFixed(0)}</p></div>
+          <div class="stat-icon accent">${I.coins}</div>
+        </div>
+        <div class="stat-card">
+          <div><p class="stat-label">平均小费</p><p class="stat-value">${DOLLAR}${s.avg_tip.toFixed(0)}</p></div>
+          <div class="stat-icon muted">${I.sparkles}</div>
+        </div>
+      </div>
+
+      <div class="info-grid stagger">
+        ${customer.features ? `<div class="info-card"><div class="info-head">${I.palette}<h3>特征描述</h3></div><p>${esc(customer.features)}</p></div>` : ''}
+        ${customer.notes ? `<div class="info-card"><div class="info-head">${I.message}<h3>注意事项</h3></div><p>${esc(customer.notes)}</p></div>` : ''}
+      </div>
+
+      <div class="records-head">
+        <h2>服务记录</h2>
+        <button class="btn btn-primary btn-sm" onclick="openRecordForm('${id}')">${I.plus}<span>添加记录</span></button>
+      </div>
+
+      ${records.length > 0 ? `
+        <div class="stagger">
+          ${records.map(r => `
+            <div class="record-card">
+              <div class="record-top">
+                <div style="flex:1;">
+                  <div class="record-meta">
+                    <span class="record-date">${I.calendar}${new Date(r.service_date).toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'})}</span>
+                    <span class="badge badge-secondary">${I.wrench}${r.service_type}</span>
+                    ${r.tip_amount > 0 ? `<span class="badge badge-outline" style="border-color:rgba(200,160,80,0.4);color:var(--accent);">${I.coins}${DOLLAR}${r.tip_amount}</span>` : ''}
+                  </div>
+                  <div class="record-details">
+                    ${r.nail_style ? `<p><span>款式：</span>${esc(r.nail_style)}</p>` : ''}
+                    ${r.color_preference ? `<p><span>颜色：</span>${esc(r.color_preference)}</p>` : ''}
+                  </div>
+                  ${r.remarks ? `<p class="record-remarks">${esc(r.remarks)}</p>` : ''}
+                </div>
+                <div class="icon-btn del" onclick="confirmDeleteRecord('${r.id}','${id}')">${I.trash}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : `
+        <div class="info-card" style="border-style:dashed;box-shadow:none;padding:40px;text-align:center;">
+          <div class="empty-icon" style="margin:0 auto 16px;">${I.sparkles}</div>
+          <h3 style="font-family:var(--font-display);color:var(--fg);font-size:1.5rem;font-weight:600;">还没有服务记录</h3>
+          <p style="color:var(--muted-fg);margin-top:4px;margin-bottom:16px;">点击上方按钮添加第一次服务记录</p>
+          <button class="btn btn-primary" onclick="openRecordForm('${id}')">${I.plus}添加记录</button>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+function renderNotFound(app) {
+  app.innerHTML = `<div class="empty" style="min-height:100vh;"><h3>页面不存在</h3><button class="btn btn-primary" onclick="navigate('/')">返回首页</button></div>`;
+}
+
+// === Forms ===
+function openCustomerForm(customer) {
+  const isEdit = !!customer;
+  openModal(`
+    <div class="modal-header"><h2 class="modal-title">${isEdit ? '编辑顾客信息' : '添加新顾客'}</h2></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">姓名 *</label><input class="form-input" id="f-name" value="${customer?esc(customer.name):''}" placeholder="顾客姓名"></div>
+      <div class="form-group"><label class="form-label">性别</label><select class="form-select" id="f-gender">
+        <option value="female" ${customer?.gender==='female'?'selected':''}>女</option>
+        <option value="male" ${customer?.gender==='male'?'selected':''}>男</option>
+        <option value="other" ${customer?.gender==='other'?'selected':''}>其他</option>
+      </select></div>
+      <div class="form-group"><label class="form-label">特征描述</label><textarea class="form-textarea" id="f-features" placeholder="指甲形状、甲油偏好、颜色喜好等...">${customer?esc(customer.features):''}</textarea></div>
+      <div class="form-group"><label class="form-label">指定美甲师</label><input class="form-input" id="f-tech" value="${customer?esc(customer.preferred_tech):''}" placeholder="常做的美甲师姓名"></div>
+      <div class="form-group"><label class="form-label">注意事项</label><textarea class="form-textarea" id="f-notes" placeholder="过敏情况、皮肤状况、特殊要求等...">${customer?esc(customer.notes):''}</textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="submitCustomer(${customer?"'"+customer.id+"'":"null"})">${isEdit?'保存修改':'添加顾客'}</button>
+    </div>
+  `);
+}
+
+function submitCustomer(id) {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { document.getElementById('f-name').style.borderColor='var(--destructive)'; return; }
+  const data = {
+    name,
+    gender: document.getElementById('f-gender').value,
+    features: document.getElementById('f-features').value.trim(),
+    preferred_tech: document.getElementById('f-tech').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+  };
+  if (id) { updateCustomer(id, data); } else { addCustomer(data); }
+  closeModal();
+  render();
+}
+
+function openRecordForm(customerId) {
+  const today = new Date().toISOString().split('T')[0];
+  openModal(`
+    <div class="modal-header"><h2 class="modal-title">添加服务记录</h2></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">服务日期 *</label><input class="form-input" type="date" id="r-date" value="${today}"></div>
+      <div class="form-group"><label class="form-label">服务类型</label><select class="form-select" id="r-type">${SERVICE_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">美甲款式</label><input class="form-input" id="r-style" placeholder="如：渐变、猫眼、手绘花朵等"></div>
+      <div class="form-group"><label class="form-label">颜色偏好</label><input class="form-input" id="r-color" placeholder="如：裸粉色、酒红色等"></div>
+      <div class="form-group"><label class="form-label">小费金额 ($)</label><input class="form-input" type="number" min="0" step="0.01" id="r-tip" placeholder="0.00"></div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="r-remarks" placeholder="其他需要记录的内容..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="submitRecord('${customerId}')">添加记录</button>
+    </div>
+  `);
+}
+
+function submitRecord(customerId) {
+  const data = {
+    customer_id: customerId,
+    service_date: document.getElementById('r-date').value,
+    service_type: document.getElementById('r-type').value,
+    nail_style: document.getElementById('r-style').value.trim(),
+    color_preference: document.getElementById('r-color').value.trim(),
+    tip_amount: parseFloat(document.getElementById('r-tip').value) || 0,
+    remarks: document.getElementById('r-remarks').value.trim(),
+  };
+  addRecord(data);
+  closeModal();
+  render();
+}
+
+// === Confirmations ===
+function confirmDeleteCustomer(id, name) {
+  openModal(`
+    <div class="modal-header"><h2 class="modal-title">确认删除</h2></div>
+    <div class="modal-body"><p style="color:var(--muted-fg);">确定要删除顾客「${esc(name)}」吗？该顾客的所有服务记录也将一并删除，此操作不可撤销。</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-destructive" onclick="doDeleteCustomer('${id}')">确认删除</button>
+    </div>
+  `);
+}
+function doDeleteCustomer(id) { deleteCustomer(id); closeModal(); navigate('/customers'); }
+
+function confirmDeleteRecord(id, customerId) {
+  openModal(`
+    <div class="modal-header"><h2 class="modal-title">确认删除记录</h2></div>
+    <div class="modal-body"><p style="color:var(--muted-fg);">确定要删除这条服务记录吗？此操作不可撤销。</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-destructive" onclick="doDeleteRecord('${id}')">确认删除</button>
+    </div>
+  `);
+}
+function doDeleteRecord(id) { deleteRecord(id); closeModal(); render(); }
+
+// === Search ===
+function updateSearch(val) {
+  document.getElementById('app').dataset.search = val;
+  renderCustomers(document.getElementById('app'));
+  // Restore focus
+  const input = document.querySelector('.search-input');
+  if (input) { input.focus(); input.setSelectionRange(val.length, val.length); }
+}
+
+// === Utils ===
+function esc(s) { if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// === Init ===
+document.addEventListener('click', (e) => {
+  // Sidebar trigger
+  if (e.target.closest('#menuTrigger')) { openSidebar(); }
+  // Sidebar overlay
+  if (e.target.id === 'sidebarOverlay') { closeSidebar(); }
+  // Sidebar close button
+  if (e.target.closest('#sidebarClose')) { closeSidebar(); }
+  // Sidebar nav
+  const navItem = e.target.closest('.sidebar-nav-item');
+  if (navItem) { e.preventDefault(); navigate(navItem.dataset.route); }
+  // Modal overlay
+  if (e.target.id === 'modalOverlay') { closeModal(); }
+});
+
+// Add menu trigger dynamically
+const trigger = document.createElement('button');
+trigger.id = 'menuTrigger';
+trigger.className = 'menu-trigger';
+trigger.innerHTML = I.menu;
+document.body.appendChild(trigger);
+
+// Initial render
+render();
+</script>
+</body>
+</html>
