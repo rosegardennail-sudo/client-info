@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f8e4e9" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Rose Garden Nail · 顾客管理</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <button id="menuBtn" class="icon-btn" aria-label="菜单">☰</button>
+    <button class="brand" data-go="home">Rose Garden Nail</button>
+    <button id="manageBtn" class="manage-btn">管理</button>
+  </header>
+
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-head"><div><small>WELCOME TO</small><strong>Rose Garden Nail</strong></div><button id="closeDrawer" class="icon-btn">×</button></div>
+    <nav>
+      <button class="drawer-link active" data-go="home">⌂ 首页</button>
+      <button class="drawer-link" data-go="customers">♡ 顾客信息</button>
+      <button class="drawer-link" data-go="add">＋ 添加新顾客</button>
+    </nav>
+    <p class="drawer-note">资料只保存在此浏览器中。关闭页面不会消失，但换手机不会自动同步。</p>
+  </aside>
+  <div id="shade" class="shade"></div>
+
+  <main>
+    <section id="home" class="page active">
+      <div class="hero">
+        <span class="kicker">CUSTOMER RECORDS</span>
+        <h1>Rose Garden Nail</h1>
+        <p>轻松记录每位顾客的喜好、来访和小费。</p>
+      </div>
+
+      <div class="stats">
+        <article><span>顾客总数</span><b id="statCustomers">0</b></article>
+        <article><span>总来访次数</span><b id="statVisits">0</b></article>
+        <article><span>本月来访</span><b id="statMonth">0</b></article>
+      </div>
+
+      <button class="add-hero" data-go="add"><span>＋</span><div><b>添加新顾客</b><small>记录顾客资料与喜好</small></div><i>›</i></button>
+
+      <div class="section-title"><div><span class="kicker">RECENT CUSTOMERS</span><h2>最近顾客</h2></div><button data-go="customers">查看全部</button></div>
+      <div id="recentList" class="customer-list"></div>
+    </section>
+
+    <section id="customers" class="page">
+      <div class="page-heading"><span class="kicker">CUSTOMERS</span><h1>顾客信息</h1><p>搜索姓名、电话、技师、特征或备注。</p></div>
+      <div class="search-box">⌕ <input id="searchInput" type="search" placeholder="搜索顾客名字、电话号码…" autocomplete="off" /></div>
+      <div id="customerList" class="customer-list"></div>
+      <div id="emptyCustomers" class="empty"><span>♡</span><b>还没有找到顾客</b><p>试试其他关键词，或添加一位新顾客。</p></div>
+      <button class="floating-add" data-go="add">＋</button>
+    </section>
+
+    <section id="add" class="page">
+      <button class="back" data-go="home">‹ 返回</button>
+      <div class="page-heading"><span class="kicker">NEW CUSTOMER</span><h1 id="formTitle">添加新顾客</h1><p>电话号码也可以用于快速搜索。</p></div>
+      <form id="customerForm" class="form-card">
+        <input type="hidden" id="customerId" />
+        <label>顾客名字 *<input id="name" required placeholder="例如：Jessica Wang" /></label>
+        <label>电话号码<input id="phone" type="tel" placeholder="例如：(315) 555-0123" /></label>
+        <div class="two-col">
+          <label>性别<select id="gender"><option>女</option><option>男</option><option>其他</option><option>未填写</option></select></label>
+          <label>常找的技师<input id="tech" placeholder="例如：Annie" /></label>
+        </div>
+        <label>顾客特征<input id="features" placeholder="例如：短发、戴眼镜、喜欢粉色" /></label>
+        <label>注意事项<textarea id="notes" rows="3" placeholder="例如：指甲薄、怕磨、喜欢安静"></textarea></label>
+        <label>小费情况<input id="tipPattern" placeholder="例如：通常给 $10 或 20%" /></label>
+        <button class="primary" type="submit">保存顾客</button>
+        <button id="cancelEdit" class="secondary hidden" type="button" data-go="customers">取消编辑</button>
+      </form>
+    </section>
+
+    <section id="detail" class="page">
+      <button class="back" data-go="customers">‹ 返回顾客列表</button>
+      <div id="detailBody"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="active" data-go="home"><span>⌂</span>首页</button>
+    <button data-go="customers"><span>♡</span>顾客</button>
+    <button data-go="add"><span>＋</span>添加</button>
+  </nav>
+
+  <dialog id="visitDialog">
+    <form id="visitForm" class="dialog-form">
+      <div class="dialog-head"><div><span class="kicker">NEW VISIT</span><h2>添加来访记录</h2></div><button type="button" id="closeVisit" class="icon-btn">×</button></div>
+      <label>日期<input id="visitDate" type="date" required /></label>
+      <label>做了什么项目 *<input id="service" required placeholder="例如：Gel Manicure + French" /></label>
+      <label>服务技师<input id="visitTech" placeholder="例如：Charlotte" /></label>
+      <div class="two-col"><label>消费金额 $<input id="amount" type="number" min="0" step="0.01" /></label><label>小费 $<input id="tip" type="number" min="0" step="0.01" /></label></div>
+      <label>本次备注<textarea id="visitNotes" rows="3" placeholder="颜色、款式、顾客反馈…"></textarea></label>
+      <button class="primary" type="submit">保存来访</button>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
