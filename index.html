@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7dfe6" />
+  <title>Rose Garden Nail - 顾客管理</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button id="menuButton" class="icon-button" aria-label="打开菜单">☰</button>
+      <div class="brand-mini">Rose Garden Nail</div>
+      <button id="manageButton" class="text-button">管理</button>
+    </header>
+
+    <aside id="sideMenu" class="side-menu" aria-hidden="true">
+      <div class="side-menu-header">
+        <strong>Rose Garden Nail</strong>
+        <button id="closeMenuButton" class="icon-button" aria-label="关闭菜单">×</button>
+      </div>
+      <nav>
+        <button class="nav-link active" data-page="homePage">首页</button>
+        <button class="nav-link" data-page="customersPage">顾客信息</button>
+      </nav>
+    </aside>
+    <div id="menuOverlay" class="overlay"></div>
+
+    <main>
+      <section id="homePage" class="page active-page">
+        <section class="hero">
+          <p class="eyebrow">CUSTOMER RECORDS</p>
+          <h1>Rose Garden Nail</h1>
+          <p>把每位顾客的偏好、项目、来访次数和小费记录得清清楚楚。</p>
+        </section>
+
+        <section class="stats-grid">
+          <article class="stat-card">
+            <span>顾客总数</span>
+            <strong id="totalCustomers">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>总来访次数</span>
+            <strong id="totalVisits">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>本月来访</span>
+            <strong id="monthlyVisits">0</strong>
+          </article>
+        </section>
+
+        <section class="card form-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">ADD CUSTOMER</p>
+              <h2>添加新顾客</h2>
+            </div>
+          </div>
+
+          <form id="customerForm" class="customer-form">
+            <div class="form-grid">
+              <label>顾客名字<input id="customerName" required placeholder="例如：Emily" /></label>
+              <label>性别<select id="customerGender"><option value="女">女</option><option value="男">男</option><option value="其他">其他</option><option value="未填写">未填写</option></select></label>
+              <label>特征<input id="customerFeatures" placeholder="例如：短发、戴眼镜" /></label>
+              <label>常找的技师<input id="preferredTech" placeholder="例如：Annie" /></label>
+            </div>
+            <label>注意事项<textarea id="customerNotes" placeholder="例如：指甲薄、怕磨、喜欢安静"></textarea></label>
+            <label>小费情况<input id="tipPattern" placeholder="例如：通常给 $10，或 20%" /></label>
+            <button class="primary-button" type="submit">保存顾客</button>
+          </form>
+        </section>
+      </section>
+
+      <section id="customersPage" class="page">
+        <section class="page-header">
+          <div>
+            <p class="eyebrow">CUSTOMERS</p>
+            <h2>顾客信息</h2>
+          </div>
+          <div class="toolbar">
+            <input id="searchInput" type="search" placeholder="搜索名字、技师、特征…" />
+            <button id="addFromCustomersButton" class="primary-button small">添加顾客</button>
+          </div>
+        </section>
+
+        <section class="card table-card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>顾客名字</th>
+                  <th>性别</th>
+                  <th>特征</th>
+                  <th>特找的人</th>
+                  <th>注意事项</th>
+                  <th>来访次数</th>
+                  <th>小费情况</th>
+                  <th class="manage-column">操作</th>
+                </tr>
+              </thead>
+              <tbody id="customerTableBody"></tbody>
+            </table>
+          </div>
+          <div id="emptyState" class="empty-state">还没有顾客记录。</div>
+        </section>
+      </section>
+
+      <section id="customerDetailPage" class="page">
+        <button id="backToCustomers" class="back-button">← 返回顾客列表</button>
+        <div id="detailContent"></div>
+      </section>
+    </main>
+
+    <dialog id="visitDialog" class="modal">
+      <form id="visitForm" method="dialog">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">NEW VISIT</p>
+            <h3>添加来访记录</h3>
+          </div>
+          <button type="button" class="icon-button" id="closeVisitDialog">×</button>
+        </div>
+        <input type="hidden" id="visitCustomerId" />
+        <label>日期<input id="visitDate" type="date" required /></label>
+        <label>做了什么项目<input id="visitService" required placeholder="例如：Builder Gel Fill + French" /></label>
+        <label>服务技师<input id="visitTechnician" placeholder="例如：Charlotte" /></label>
+        <label>消费金额<input id="visitAmount" type="number" min="0" step="0.01" placeholder="例如：65" /></label>
+        <label>小费<input id="visitTip" type="number" min="0" step="0.01" placeholder="例如：10" /></label>
+        <label>本次备注<textarea id="visitNotes" placeholder="颜色、款式、顾客反馈等"></textarea></label>
+        <button class="primary-button" type="submit">保存来访</button>
+      </form>
+    </dialog>
+
+    <dialog id="editDialog" class="modal">
+      <form id="editCustomerForm" method="dialog">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">EDIT CUSTOMER</p>
+            <h3>编辑顾客资料</h3>
+          </div>
+          <button type="button" class="icon-button" id="closeEditDialog">×</button>
+        </div>
+        <input type="hidden" id="editCustomerId" />
+        <label>顾客名字<input id="editName" required /></label>
+        <label>性别<select id="editGender"><option value="女">女</option><option value="男">男</option><option value="其他">其他</option><option value="未填写">未填写</option></select></label>
+        <label>特征<input id="editFeatures" /></label>
+        <label>常找的技师<input id="editPreferredTech" /></label>
+        <label>注意事项<textarea id="editNotes"></textarea></label>
+        <label>小费情况<input id="editTipPattern" /></label>
+        <button class="primary-button" type="submit">保存修改</button>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
